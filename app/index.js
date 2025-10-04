@@ -1,6 +1,6 @@
 import { useFonts } from 'expo-font';
 import { useRouter } from "expo-router";
-import { useEffect, useRef } from "react";
+import { Platform, useEffect, useRef } from "react";
 import { Animated, Easing, Image, StyleSheet, View } from "react-native";
 
 function useAppFonts() {
@@ -24,25 +24,26 @@ export default function SplashScreen() {
         }
 
         // Start animations
+        const useNativeDriver = Platform.OS !== 'web';
         Animated.parallel([
             Animated.timing(fadeAnim, {
                 toValue: 1,
                 duration: 1000,
-                useNativeDriver: true,
+                useNativeDriver,
             }),
 
             Animated.timing(scaleAnim, {
                 toValue: 1,
                 duration: 800,
                 easing: Easing.elastic(1),
-                useNativeDriver: true,
+                useNativeDriver,
             }),
 
             Animated.timing(slideAnim, {
                 toValue: 0,
                 duration: 1000,
                 easing: Easing.out(Easing.cubic),
-                useNativeDriver: true,
+                useNativeDriver,
             })
         ]).start();
 
@@ -53,12 +54,12 @@ export default function SplashScreen() {
                 Animated.timing(fadeAnim, {
                     toValue: 0,
                     duration: 500,
-                    useNativeDriver: true,
+                    useNativeDriver,
                 }),
                 Animated.timing(scaleAnim, {
                     toValue: 1.2,
                     duration: 500,
-                    useNativeDriver: true,
+                    useNativeDriver,
                 })
             ]).start(() => {
                 router.replace("/");

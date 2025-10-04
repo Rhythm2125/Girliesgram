@@ -1,7 +1,7 @@
 import { useFonts } from 'expo-font';
 import { useRouter } from "expo-router";
-import { Platform, useEffect, useRef } from "react";
-import { Animated, Easing, Image, StyleSheet, View } from "react-native";
+import { Platform, useEffect, useRef, useState } from "react";
+import { Animated, Easing, Image, StyleSheet, Text, View } from "react-native";
 
 function useAppFonts() {
     const [fontsLoaded] = useFonts({
@@ -14,6 +14,7 @@ function useAppFonts() {
 export default function SplashScreen() {
     const fontsLoaded = useAppFonts();
     const router = useRouter();
+    const [isVisible, setIsVisible] = useState(false);
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const scaleAnim = useRef(new Animated.Value(0.8)).current;
     const slideAnim = useRef(new Animated.Value(50)).current;
@@ -23,8 +24,20 @@ export default function SplashScreen() {
             return null;
         }
 
-        // Start animations
-        const useNativeDriver = Platform.OS !== 'web';
+        // For web, use simple state-based animation
+        if (Platform.OS === 'web') {
+            setIsVisible(true);
+            const timer = setTimeout(() => {
+                setIsVisible(false);
+                setTimeout(() => {
+                    router.replace("/");
+                }, 300);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+
+        // For mobile, use native animations
+        const useNativeDriver = true;
         Animated.parallel([
             Animated.timing(fadeAnim, {
                 toValue: 1,
@@ -71,10 +84,16 @@ export default function SplashScreen() {
 
     return (
         <View style={styles.container}>
-            <Animated.View 
+            <View 
                 style={[
                     styles.content,
-                    {
+                    Platform.OS === 'web' ? {
+                        opacity: isVisible ? 1 : 0,
+                        transform: [
+                            { scale: isVisible ? 1 : 0.8 },
+                            { translateY: isVisible ? 0 : 50 }
+                        ]
+                    } : {
                         opacity: fadeAnim,
                         transform: [
                             { scale: scaleAnim },
@@ -85,33 +104,35 @@ export default function SplashScreen() {
             >
 
                 {/* Logo */}
-                <Animated.View style={styles.logoContainer}>
-                    <Animated.View style={styles.logoInner}>
+                <View style={styles.logoContainer}>
+                    <View style={styles.logoInner}>
                         <Image 
                             source={require('../assets/images/girliesgram logo.png')}
                             style={styles.logoImage}
                         />
-                    </Animated.View>
-                </Animated.View>
+                    </View>
+                </View>
 
                 {/* App Name */}
-                <Animated.Text style={[styles.appName, styles.appNameWithFont]}>
+                <Text style={[styles.appName, styles.appNameWithFont]}>
                     Girliesgram
-                </Animated.Text>
+                </Text>
 
                 {/* Tagline */}
-                <Animated.Text style={styles.tagline}>
+                <Text style={styles.tagline}>
                     A creative app specially made for girls
-                </Animated.Text>
+                </Text>
 
                 {/* Loading dots */}
                 <View style={styles.loadingDots}>
                     {[0, 1, 2].map((index) => (
-                        <Animated.View
+                        <View
                             key={index}
                             style={[
                                 styles.dot,
-                                {
+                                Platform.OS === 'web' ? {
+                                    transform: [{ scale: isVisible ? 1 : 0.3 }]
+                                } : {
                                     transform: [{
                                         scale: fadeAnim.interpolate({
                                         inputRange: [0, 0.5, 1],
@@ -123,7 +144,7 @@ export default function SplashScreen() {
                         />
                     ))}
                 </View>
-            </Animated.View>
+            </View>
 
             {/* Background decorative elements */}
             <View style={styles.backgroundCircle1} />
